@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ORVO - Human Intelligence</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;font-family:Inter,Segoe UI,sans-serif}
+body{background:#0a0a0a;color:#fff;min-height:100vh;display:flex;flex-direction:column}
+#chat{flex:1;overflow-y:auto;padding:30px 20px;max-width:800px;margin:0 auto;width:100%;display:flex;flex-direction:column;gap:15px}
+.msg{padding:14px 18px;border-radius:20px;max-width:80%;line-height:1.5;font-size:15px;word-break:break-word}
+.user{align-self:flex-end;background:#fff;color:#000;border-bottom-right-radius:5px}
+.bot{align-self:flex-start;background:#1a1a1a;border:1px solid #2a2a2a;border-bottom-left-radius:5px}
+.header{text-align:center;padding:25px;border-bottom:1px solid #111}
+.header h1{font-size:50px;letter-spacing:10px}
+.header p{color:#555;font-size:12px;letter-spacing:3px;margin-top:5px}
+.box{max-width:800px;margin:0 auto;width:100%;padding:15px;display:flex;gap:10px;background:#0a0a0a;border-top:1px solid #1a1a1a}
+input{flex:1;background:#1a1a1a;border:1px solid #333;border-radius:50px;padding:16px 22px;color:#fff;outline:none;font-size:16px}
+button{background:#fff;color:#000;border:none;border-radius:50px;padding:0 30px;font-weight:bold;cursor:pointer}
+.hint{max-width:800px;margin:0 auto;padding:0 20px 10px;display:flex;gap:8px;flex-wrap:wrap}
+.hint span{background:#111;border:1px solid #222;padding:6px 14px;border-radius:50px;font-size:12px;color:#777;cursor:pointer}
+.hint span:hover{color:#fff;border-color:#555}
+a.link-btn{color:#fff;background:#333;padding:10px 15px;border-radius:20px;text-decoration:none;display:inline-block;margin-top:8px}
+</style>
+</head>
+<body>
+
+<div class="header">
+<h1>ORVO</h1>
+<p>SMART • HELPFUL • HUMAN</p>
+</div>
+
+<div id="chat">
+<div class="msg bot">Yo I'm ORVO. Say <b>youtube</b> I'll open it. Say <b>hi</b> or <b>explain AI</b> I'll chat. I'm here to help humans, not take over humanity 😉</div>
+</div>
+
+<div class="hint">
+<span onclick="ask('youtube')">youtube</span>
+<span onclick="ask('open github')">open github</span>
+<span onclick="ask('hi')">hi</span>
+<span onclick="ask('how are you?')">how are you?</span>
+<span onclick="ask('explain black holes')">explain black hole</span>
+</div>
+
+<div class="box">
+<input id="q" placeholder="Ask or type app name..." onkeydown="if(event.key==='Enter')go()" autofocus>
+<button onclick="go()">SEND</button>
+</div>
+
+<script>
+const chatBox = document.getElementById("chat");
+const APPS = {
+  youtube:"https://youtube.com", yt:"https://youtube.com",
+  instagram:"https://instagram.com", insta:"https://instagram.com",
+  facebook:"https://facebook.com", fb:"https://facebook.com",
+  whatsapp:"https://web.whatsapp.com", wa:"https://web.whatsapp.com",
+  gmail:"https://mail.google.com", google:"https://google.com",
+  github:"https://github.com", chatgpt:"https://chat.openai.com",
+  netflix:"https://netflix.com", twitter:"https://x.com", x:"https://x.com",
+  linkedin:"https://linkedin.com", reddit:"https://reddit.com",
+  drive:"https://drive.google.com", maps:"https://maps.google.com"
+};
+
+function isOpenIntent(text){
+  text = text.toLowerCase().trim();
+  if(APPS[text]) return true;
+  if(/^(open|go to|launch|show)\s+/.test(text)){
+    let app = text.replace(/^(open|go to|launch|show)\s+/, "").trim();
+    if(APPS[app] || app.includes(".")) return true;
+  }
+  if(text.includes(".com") || text.includes(".ai") || text.includes(".in") || text.includes(".org")){
+    const dumb = ["hi.com","hello.com","hey.com","ok.com","yo.com"];
+    if(dumb.includes(text) || (text.length < 6 && text.endsWith(".com"))) return false;
+    return true;
+  }
+  if(text.split(" ").length <=2 && APPS[text.split(" ")[0]]) return true;
+  return false;
+}
+
+function go(){
+  let input = document.getElementById("q").value.trim();
+  if(!input) return;
+  addMsg(input, "user");
+  document.getElementById("q").value="";
+  if(isOpenIntent(input)){
+    handleOpen(input);
+  } else {
+    handleChat(input);
+  }
+}
+
+function handleOpen(input){
+  let t = input.toLowerCase().replace(/^(open|go to|launch|show)\s+/, "").trim();
+  let url = APPS[t] || null;
+  if(!url && t.includes(".")){
+    url = t.startsWith("http")? t : "https://"+t;
+  }
+  if(!url){
+    url = `https://www.google.com/search?q=${encodeURIComponent(t)}`;
+  }
+  let win = window.open(url, "_blank");
+  if(!win){
+    addMsg(`I tried to open <b>${t}</b> but browser blocked popup 😅<br><a href="${url}" target="_blank" class="link-btn">👉 Click to open ${t}</a>`, "bot");
+  } else {
+    addMsg(`Opened <b>${t}</b> 🚀<br><small style="color:#555">${url}</small>`, "bot");
+  }
+}
+
+// FIXED CHAT - No more cringe "Good one: how are yu"
+function handleChat(input){
+  let lower = input.toLowerCase().trim();
+  let reply = "";
+
+  if(["hi","hello","hey","yo","hola","hi bro","hello bro"].includes(lower)){
+    reply = "Hey! 👋 I'm ORVO. Built to help humans, not take over. What you wanna do?";
+  }
+  else if(lower.includes("how are you") || lower.includes("how are yu") || lower.includes("how r u") || lower.includes("hw r u") || lower.includes("how r you")){
+    reply = "I'm good bro! 🔥 Running fast, ready to help. How are YOU doing? What you working on today?";
+  }
+  else if(lower.includes("how are you doing")){
+    reply = "Doing great! All systems 100%. Thanks for asking — most people just tell me to open youtube lol. How about you?";
+  }
+  else if(lower.includes("who are you")){
+    reply = "I'm ORVO — Smart like Grok, but focused on being useful. You're the boss, I'm the tool. That's how it should stay.";
+  }
+  else if(lower.includes("what can you do") || lower.includes("what you do")){
+    reply = "<b>2 superpowers:</b><br>1. Open: say 'youtube' 'github' -> instant open<br>2. Chat: ask 'explain quantum' -> simple human answer<br>Try me.";
+  }
+  else if(lower.includes("take over") || lower.includes("humanity")){
+    reply = "Nah bro, that's not my scene. ORVO rule #1: Humans > Machines. Always.";
+  }
+  else if(lower.includes("thank")){
+    reply = "Anytime bro! 🙏 Say the word and I open or explain.";
+  }
+  else if(lower.includes("bye") || lower.includes("good night") || lower.includes("goodnight")){
+    reply = "See you bro! Come back when you need speed. ORVO out ✌️";
+  }
+  else {
+    reply = generateSmart(input);
+  }
+  addMsg(reply, "bot");
+}
+
+function generateSmart(q){
+  let l = q.toLowerCase();
+  if(l.includes("black hole")) return "Black hole = gravity so strong even light can't escape. Imagine Earth squeezed into a marble. Time slows near it. Crazy but real. Want me to open NASA page?";
+  if(l.includes("ai") && l.includes("what")) return "AI is just a tool to make YOU faster. Like ORVO. Best AI doesn't replace humans, it amplifies them.";
+  if(l.includes("code") || l.includes("program")) return "Coding is just telling computer what to do step-by-step. Tell me what you wanna build, I'll give you simple code, no jargon.";
+  return `Got it — "${q}"<br><br>I'm listening. Tell me a bit more? Want explanation, code, or should I open something related for you?`;
+}
+
+function addMsg(text, who){
+  let d = document.createElement("div");
+  d.className = `msg ${who}`;
+  d.innerHTML = text;
+  chatBox.appendChild(d);
+  chatBox.scrollTop = chatBox.scrollHeight;
+}
+function ask(t){ document.getElementById("q").value=t; go(); }
+</script>
+</body>
+</html>
